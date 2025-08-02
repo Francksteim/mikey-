@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat - Mikey IA</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      color: white;
+    }
+
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 1000px;
+      margin: 0 auto;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    .chat-header {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 20px;
+      text-align: center;
+      border-bottom: 2px solid #00bfff;
+      animation: slideDown 0.5s ease-out;
+    }
+
+    .chat-header h1 {
+      color: #00bfff;
+      font-size: 2rem;
+      margin-bottom: 5px;
+    }
+
+    .chat-header p {
+      color: #ccc;
+      font-size: 1rem;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .message {
+      display: flex;
+      animation: fadeInUp 0.3s ease-out;
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .message.bot {
+      justify-content: flex-start;
+    }
+
+    .message-bubble {
+      max-width: 70%;
+      padding: 15px 20px;
+      border-radius: 20px;
+      word-wrap: break-word;
+      position: relative;
+    }
+
+    .message.user .message-bubble {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      color: white;
+      border-bottom-right-radius: 5px;
+    }
+
+    .message.bot .message-bubble {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom-left-radius: 5px;
+    }
+
+    .message-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin: 0 10px;
+      flex-shrink: 0;
+    }
+
+    .message.user .message-avatar {
+      background: #007bff;
+      order: 1;
+    }
+
+    .message.bot .message-avatar {
+      background: #00bfff;
+      color: #000;
+    }
+
+    .chat-input {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 20px;
+      border-top: 2px solid #00bfff;
+    }
+
+    .input-container {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 15px 20px;
+      border: none;
+      border-radius: 25px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .chat-input input::placeholder {
+      color: #ccc;
+    }
+
+    .chat-input input:focus {
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 20px rgba(0, 191, 255, 0.3);
+    }
+
+    .send-button {
+      padding: 15px 25px;
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      border: none;
+      border-radius: 25px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .send-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+    }
+
+    .send-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .typing-indicator {
+      display: none;
+      padding: 15px 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      border-bottom-left-radius: 5px;
+      max-width: 70%;
+      margin-left: 50px;
+    }
+
+    .typing-dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .typing-dots span {
+      width: 8px;
+      height: 8px;
+      background: #00bfff;
+      border-radius: 50%;
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typing {
+      0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.5;
+      }
+      30% {
+        transform: translateY(-10px);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .chat-messages::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: #00bfff;
+      border-radius: 10px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+      background: #007bff;
+    }
+
+    @media screen and (max-width: 600px) {
+      .chat-header h1 {
+        font-size: 1.5rem;
+      }
+
+      .message-bubble {
+        max-width: 85%;
+      }
+
+      .input-container {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .chat-input input {
+        width: 100%;
+      }
+
+      .send-button {
+        width: 100%;
+        padding: 15px;
+      }
+    }
+  </style>
+  <style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-image: url('https://images.unsplash.com/photo-1518837695005-2083093ee35b');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+</style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <div class="chat-header">
+      <h1>MIKEY IA</h1>
+      <p>Votre assistant personnel</p>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="message bot">
+        <div class="message-avatar">🤖</div>
+        <div class="message-bubble">
+          Salut ! Je suis Mikey IA, votre assistant personnel. Comment puis-je vous aider aujourd'hui ?
+        </div>
+      </div>
+    </div>
+
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+
+    <div class="chat-input">
+      <div class="input-container">
+        <input 
+          type="text" 
+          id="messageInput" 
+          placeholder="Tapez votre message..."
+          maxlength="500"
+        />
+        <button id="send" class="send-button">Envoyer</button>
+      </div>
+    </div>
+  </div>
+<script src="chat.js"></script>
+</body>
+</html>
